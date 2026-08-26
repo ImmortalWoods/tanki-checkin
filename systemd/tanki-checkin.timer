@@ -1,0 +1,13 @@
+[Unit]
+Description=Ежедневный забор наград «табеля» на tanki.su
+
+[Timer]
+# Календарь сбрасывается в 00:00 MSK — 09:00 по местному берём с запасом.
+OnCalendar=*-*-* 09:00:00
+# Догнать пропущенный запуск, если компьютер был выключен.
+Persistent=true
+AccuracySec=1min
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,7 @@
+# Batch-файлы Windows требуют CRLF: с LF ломаются метки и goto.
+*.cmd text eol=crlf
+# Всё остальное — LF, независимо от настроек git у того, кто клонирует.
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+systemd/* text eol=lf

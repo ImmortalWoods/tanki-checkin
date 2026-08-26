@@ -1,0 +1,30 @@
+[Unit]
+Description=Забор ежедневных наград «табеля» на tanki.su
+Documentation=file:///path/to/tanki-checkin/README.md
+# Диск с проектом может быть не смонтирован — тогда юнит пропускается, а не падает.
+ConditionPathExists=/path/to/tanki-checkin/checkin.py
+
+[Service]
+# Type=exec, а НЕ oneshot. Юнит входит в Wants= graphical-session.target, а
+# systemd не считает цель достигнутой, пока активируются её Wants=. С oneshot
+# «активация» = весь прогон (до 15 минут ожидания ангара), и всё это время
+# graphical-session.target висит в очереди, а с ней и
+# xdg-desktop-portal-gnome (у него After=graphical-session.target). Портал не
+# поднимается — и каждое GTK/Qt-приложение ждёт его по 25–120 с при запуске.
+# С Type=exec юнит активен сразу после старта процесса: цель достигается
+# мгновенно, работа идёт фоном.
+Type=exec
+# Оба шага (забор + заход в клиент) — в одном скрипте: ExecStartPost удерживал
+# бы активацию ровно так же, как ExecStart.
+# Playwright стоит в miniconda; /usr/bin/python3 его не видит — путь внутри скрипта.
+ExecStart=/path/to/tanki-checkin/run_daily.sh
+# Потолок на весь прогон: до 3 попыток с паузами по минуте на каждый аккаунт
+# последовательно, плюс до 15 минут ожидания ангара. У Type=exec за это отвечает
+# RuntimeMaxSec, а не TimeoutStartSec.
+RuntimeMaxSec=45min
+
+[Install]
+# Запуск при входе в графическую сессию. Именно эта цель, а не OnStartupSec:
+# при Linger=yes user-менеджер стартует ещё при загрузке, когда сессии,
+# а значит и адресата для notify-send, ещё нет.
+WantedBy=graphical-session.target
